@@ -55,7 +55,11 @@ class Resque_Job_Status
 			'updated' => time(),
 			'started' => time(),
 		);
-		Resque::redis()->set('job:' . $id . ':status', json_encode($statusPacket));
+		$key = 'job:' . $id . ':status';
+		Resque::redis()->set($key, json_encode($statusPacket));
+		// To prevent statuses from sticking around forever, set their original expiry
+		// to 24 hours
+		Resque::redis()->expire($key, 86400);
 	}
 
 	/**
